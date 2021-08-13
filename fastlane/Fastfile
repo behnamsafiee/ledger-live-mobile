@@ -193,6 +193,35 @@ platform :ios do
     MY_PROFILE = "match AdHoc #{MY_APP_BUNDLE_ID}"
     MY_TEAM = ENV["DEVELOPER_TEAM_ID"]
 
+    if (ENV["GIT_REPO_URL"] == nil)
+      puts "You need to set an GIT_REPO_URL"
+      next
+    end
+    if (ENV["APPLE_ID"] == nil)
+      puts "You need to set an APPLE_ID"
+      next
+    end
+    if (ENV["DEVELOPER_TEAM_ID"] == nil)
+      puts "You need to set an DEVELOPER_TEAM_ID"
+      next
+    end
+    if (ENV["CI_KEYCHAIN_NAME"] == nil)
+      puts "You need to set an CI_KEYCHAIN_NAME"
+      next
+    end
+    if (ENV["CI_KEYCHAIN_PASSWORD"] == nil)
+      puts "You need to set an CI_KEYCHAIN_PASSWORD"
+      next
+    end
+    if (ENV["GIT_REPO_USER"] == nil)
+      puts "You need to set an GIT_REPO_USER"
+      next
+    end
+    if (ENV["TOKEN"] == nil)
+      puts "You need to set an TOKEN"
+      next
+    end
+
     setup_ios_ci
 
     settings_to_override = {
