@@ -17,23 +17,15 @@ XCODE_PROJECT = "./ios/#{PROJECT_NAME}.xcodeproj"
 XCODE_WORKSPACE = "./ios/#{PROJECT_NAME}.xcworkspace"
 OUTPUT_DIRECTORY = "./ios"
 IPA_DIRECTORY = "#{OUTPUT_DIRECTORY}/#{PROJECT_NAME}.ipa"
-BUILD_FOR_DEVELOPMENT_ONLY = false # true = Build for Development | false = Build to create a release
-BUILD_ONLY = true
 
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
+
 default_platform(:ios)
 package = load_json(json_path: "./package.json")
 
 lane :beta do |options|
   ensure_git_status_clean
-  # ensure_git_branch(
-  #   branch: 'master|develop'
-  # )
-  # git_pull
-
-  # release = options.fetch(:release, false)
-
 
   # Makes sure Android Keystore File is set for release
   # as we need to sign Android app (which can still complete even without signing)
@@ -42,14 +34,14 @@ lane :beta do |options|
     next
   end
 
-  # Makes sur the Appfile is present
-  if (!File.file?('Appfile'))
-    puts "You need to create an Appfile."
-    puts "You can copy and update Appfile.template"
-    next
-  end
+  # # Makes sur the Appfile is present
+  # if (!File.file?('Appfile'))
+  #   puts "You need to create an Appfile."
+  #   puts "You can copy and update Appfile.template"
+  #   next
+  # end
 
-  system "yarn --frozen-lockfile"
+  system "yarn --frozen-lockfile --network-timeout 100000"
 
   Fastlane::LaneManager.cruise_lane('ios', 'beta', { :remote => "origin"}, 'production')
   Fastlane::LaneManager.cruise_lane('android', 'beta', { :remote => "origin"})
@@ -107,6 +99,7 @@ platform :ios do
 
   # =============================== PRIVATE ===============================
 
+  # TODO: Unify CI Script using the build lane (needs to be reworked)
   desc "buid for deployment (app-store or ad-hoc)"
   lane :build do |options|
     export_options_method = (options[:adhoc] ? "ad-hoc" : "app-store")
@@ -128,7 +121,7 @@ platform :ios do
       type: (options[:adhoc] ? "adhoc" : "appstore"),
       username: ENV["APPLE_ID"],
       team_id: ENV["DEVELOPER_TEAM_ID"],
-      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["TOKEN"]}"),
+      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["GH_TOKEN"]}"),
       readonly: true,
       output_path: "./fastlane/certs"
     )
@@ -209,7 +202,7 @@ platform :ios do
       team_id: ENV["DEVELOPER_TEAM_ID"],
       keychain_name: ENV["CI_KEYCHAIN_NAME"],
       keychain_password: ENV["CI_KEYCHAIN_PASSWORD"],
-      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["TOKEN"]}"),
+      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["GH_TOKEN"]}"),
       readonly: true,
     )
 
@@ -237,7 +230,8 @@ platform :ios do
       }
     )
 
-    upload
+    # TODO: Fix Upload usin
+    # upload
   end
 
   desc "ci: create adhoc version"
@@ -265,7 +259,7 @@ platform :ios do
       team_id: ENV["DEVELOPER_TEAM_ID"],
       keychain_name: ENV["CI_KEYCHAIN_NAME"],
       keychain_password: ENV["CI_KEYCHAIN_PASSWORD"],
-      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["TOKEN"]}"),
+      git_basic_authorization: Base64.strict_encode64("#{ENV["GIT_REPO_USER"]}:#{ENV["GH_TOKEN"]}"),
       readonly: true,
     )
 
